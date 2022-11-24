@@ -2,10 +2,7 @@ from abc import ABCMeta, abstractmethod
 
 class Feature:
     @abstractmethod
-    def prep():
-        pass
-    @abstractmethod
-    def transformation():
+    def transform():
         pass
     @abstractmethod
     def apply():

@@ -2,10 +2,10 @@ from sklearn.model_selection import train_test_split
 import pandas as pd
 
 class DataPrep:
-    def __init__(self, datapath, indep, dep):
+    def __init__(self, datapath):
         self.dataset = pd.read_csv(datapath)
-        self.independent_variables = indep
-        self.target_variable = dep
+        self.independent_variables = list(self.dataset.columns[:-1])
+        self.target_variable = list(self.dataset.columns[-1:])
     
     def get_features(self):
         X = self.dataset.loc[:, [self.independent_variables]]
@@ -20,7 +20,5 @@ class DataPrep:
         test = pd.DataFrame(X_test, columns=self.independent_variables)
         test[f'{self.target_variable}'] = y_test
         return training, test
-
-
 
 
