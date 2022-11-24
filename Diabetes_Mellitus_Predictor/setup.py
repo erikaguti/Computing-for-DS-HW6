@@ -1,6 +1,6 @@
 from setuptools import setup
 
-setup(name='DiabetesLibrary',
+setup(name='Diabetes_Mellitus_Predictor',
       version='0.1',
       packages=['Diabetes_Mellitus_Predictor', 'Modeler', 'Prep', 'Process'],
 )
