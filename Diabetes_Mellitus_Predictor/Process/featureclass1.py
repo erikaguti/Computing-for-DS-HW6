@@ -1,4 +1,4 @@
-from featureparent import Feature
+from Diabetes_Mellitus_Predictor.Process.featureparent import Feature
 import pandas as pd
 
 class Dummy(Feature):
