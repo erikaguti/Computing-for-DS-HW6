@@ -123,7 +123,7 @@ class Deck(Card):
     def draw(self):
         card = self.cards.pop()
         res = card.suit, card.value
-        return f'The card drawn is: {res[1]} of {res[0]}
+        return f'The card drawn is: {res[1]} of {res[0]}'
 
 
 ###################
