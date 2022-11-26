@@ -66,7 +66,7 @@ probas = diabetes_predictor.predict(test)
 
 test['predictions'] = probas[:,1]
 
-print(roc_auc_score(test['diabetes_mellitus'], test['predictions']))
+print('Area Under the Receiver Operating Characteristic Curve = ', roc_auc_score(test['diabetes_mellitus'], test['predictions']))
 
 
 
