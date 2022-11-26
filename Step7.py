@@ -5,8 +5,7 @@ from Diabetes_Mellitus_Predictor.Process.featureclass1 import Dummy
 from Diabetes_Mellitus_Predictor.Process.featureclass2 import Interaction
 from Diabetes_Mellitus_Predictor.Modeler.model import Model
 import pandas as pd
-from scipy.stats import pearsonr
-
+from sklearn.metrics import roc_auc_score
 
 # Step 1: Load initial dataset
 prep = DataPrep('sample_diabetes_mellitus_data.csv')
@@ -40,26 +39,34 @@ for col in prep.dataset.select_dtypes('number').columns[:-1]:
 prep.dataset = pd.concat([pd.concat(tdfs, axis=1), prep.dataset], axis = 1)
 
 
-# Step 5: Prepare model
-
-
-## 5.1 compute Pearson correlations to remove redundant features
+# Step 5: Prepare train and test datasets
 prep.dataset.dropna(axis = 1, inplace = True)
-correlations = {}
-for col in prep.dataset.columns:
-    try:
-        correlations.update({col:pearsonr(prep.dataset[col], prep.dataset['diabetes_mellitus'])})
-    except Exception:
-        correlations.update({col:0})
 
-for num in correlations.values():
-    try:
-        if round(num[0], 1) > .5:
-            print("corr", num[0])
-    except:
-        print(num)
-    
+prep.dataset = prep.dataset.select_dtypes('number')
+
+prep.independent_variables = prep.dataset.columns[:-1]
+
+train, test = prep.get_train_test_datasets(prep.dataset[prep.independent_variables], prep.dataset[prep.target_variable])
+
 
 # Step 6: Run model
+prep.dataset.dropna(axis = 1, inplace = True)
+
+prep.dataset = prep.dataset.select_dtypes('number')
+
+prep.independent_variables = prep.dataset.columns[:-1]
+
+train, test = prep.get_train_test_datasets(prep.dataset[prep.independent_variables], prep.dataset[prep.target_variable])
+
+diabetes_predictor = Model(prep.independent_variables, prep.target_variable)
+
+diabetes_predictor.train(train)
+
+probas = diabetes_predictor.predict(test)
+
+test['predictions'] = probas[:,1]
+
+print(roc_auc_score(test['diabetes_mellitus'], test['predictions']))
+
 
 

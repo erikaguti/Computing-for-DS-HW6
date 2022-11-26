@@ -7,18 +7,10 @@ class DataPrep:
         self.independent_variables = list(self.dataset.columns[:-1])
         self.target_variable = list(self.dataset.columns[-1:])
     
-    def get_features(self):
-        X = self.dataset.loc[:, [self.independent_variables]]
-        return X
-    def get_target(self):
-        y = self.dataset.loc[:,[self.target_variable]]
-        return y
     def get_train_test_datasets(self, X, y):
-        X_train, y_train, X_test, y_test = train_test_split(X, y)
-        training = pd.DataFrame(X_train, columns = [self.independent_variables])
-        training[f'{self.target_variable}'] = y_train
-        test = pd.DataFrame(X_test, columns=self.independent_variables)
-        test[f'{self.target_variable}'] = y_test
+        X_train, X_test, y_train, y_test = train_test_split(X, y)
+        training = pd.concat([X_train, y_train], axis=1)
+        test = pd.concat([X_test, y_test], axis=1)
         return training, test
 
 
