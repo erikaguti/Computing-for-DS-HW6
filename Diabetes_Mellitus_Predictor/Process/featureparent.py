@@ -1,9 +1,7 @@
-from abc import ABCMeta, abstractmethod
+from abc import ABC, abstractmethod
 
-class Feature:
+class Feature(ABC):
     @abstractmethod
-    def transform():
+    def transform(self):
         pass
-    @abstractmethod
-    def apply():
-        pass
+

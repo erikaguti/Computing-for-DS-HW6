@@ -1,27 +1,65 @@
 from Diabetes_Mellitus_Predictor.Prep.load_data import DataPrep
 from Diabetes_Mellitus_Predictor.Prep.preprocessor import PreprocessRemove
+from Diabetes_Mellitus_Predictor.Prep.preprocessor import PreprocessFill
 from Diabetes_Mellitus_Predictor.Process.featureclass1 import Dummy
 from Diabetes_Mellitus_Predictor.Process.featureclass2 import Interaction
 from Diabetes_Mellitus_Predictor.Modeler.model import Model
 import pandas as pd
-
-data = DataPrep('sample_diabetes_mellitus_data.csv')
-
-for col in data.dataset.columns:
-    df = pd.DataFrame()
-    if data.dataset[col].dtype == 'object':
-        transform = Dummy().transform(data.dataset, col)
-        df = pd.concat([df, transform])
+from scipy.stats import pearsonr
 
 
+# Step 1: Load initial dataset
+prep = DataPrep('sample_diabetes_mellitus_data.csv')
+prep.dataset.drop('Unnamed: 0', axis=1, inplace=True)
 
-#a. Create a class with a primary method that loads the data and returns two dataframes, one for train and another for test. Internally, the class can use the function defined in hw5.
-#b. Create a preprocessor class that removes those rows that contain NaN values in the columns: age, gender, ethnicity.
-#c. Create a preprocessor class that fills NaN with the mean value of the column in the columns: height, weight.
-#d. Create at least two feature classes that transform some of the columns in the data set. These feature classes need to have the same structure defined by an abstract parent class (Remember: polymorphism).
-#e. Create a model class with two primary methods: train and predict. When the model class is initialized, the constructor (init) should receive as inputs (at least):
-#1. Feature columns that are going to be used
-#2. Target column that is going to be used
-#3. (bonus) Hyperparameters of the model to be used.
-#f. The model class should have as private attributes each of the inputs of the constructor and an additional one, called “model” that will be a model from sklearn chosen by the team (such as LogisticRegression or RandomForestClassifier) as a public attribute of the class.
-#1. The train method should receive the train data containing at least the feature and target columns defined and fit the self.model on the train data using the features and the target (to filter columns) passed when the class is initialize, and return nothing. 2.The predict method should receive a dataframe, use the features passed to filter the columns and return the predicted probabilities using the .predict_proba method of the sklearn class selected.
+# Step 2: Remove nulls in age, gender, and ethnicity
+
+prep.dataset = PreprocessRemove().removenullrows(prep.dataset, ['age', 'gender', 'ethnicity'])
+
+# Step 3: Fill nulls with with average of the column for height and weight
+
+prep.dataset = PreprocessFill().fillnulls(prep.dataset, ['height', 'weight'])
+
+# Step 4: Feature Engineering:
+
+## Step 4.1: Create dummy columns for all string columns in the dataset
+
+tdfs = []
+for col in prep.dataset.select_dtypes('object').columns:
+        transform = Dummy().transform(prep.dataset, col)
+        tdfs.append(transform)
+
+prep.dataset = pd.concat([pd.concat(tdfs, axis = 1), prep.dataset], axis = 1)
+
+## Step 4.2: Create interaction term columns for all numerical columns in the dataset
+tdfs = []
+for col in prep.dataset.select_dtypes('number').columns[:-1]:
+    transform = Interaction().transform(prep.dataset, col)
+    tdfs.append(transform)
+
+prep.dataset = pd.concat([pd.concat(tdfs, axis=1), prep.dataset], axis = 1)
+
+
+# Step 5: Prepare model
+
+
+## 5.1 compute Pearson correlations to remove redundant features
+prep.dataset.dropna(axis = 1, inplace = True)
+correlations = {}
+for col in prep.dataset.columns:
+    try:
+        correlations.update({col:pearsonr(prep.dataset[col], prep.dataset['diabetes_mellitus'])})
+    except Exception:
+        correlations.update({col:0})
+
+for num in correlations.values():
+    try:
+        if round(num[0], 1) > .5:
+            print("corr", num[0])
+    except:
+        print(num)
+    
+
+# Step 6: Run model
+
+

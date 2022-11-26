@@ -3,7 +3,7 @@ import numpy as np
 class PreprocessRemove:
     def removenullrows(self, df, columns):
         for col in columns:
-            df.dropna(col, inplace = True)
+            df[col].dropna(inplace = True)
         return df
 
 class PreprocessFill:
